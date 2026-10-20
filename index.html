@@ -1,126 +1,183 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Управляйте 1С из Telegram</title>
-<meta name="description" content="Сделаю Telegram-бота, через который вы создаёте документы и формируете отчёты в 1С обычными сообщениями.">
+<title>Управляйте 1С сообщениями в Telegram</title>
+<meta name="description" content="Telegram-бот для малого бизнеса на 1С: создавайте документы и получайте отчёты обычным сообщением.">
 <style>
   :root {
-    --blue: #1d3f9e;
-    --blue-dark: #142d75;
-    --blue-soft: #e8eefb;
-    --ink: #172033;
-    --muted: #5a6478;
-    --bg: #ffffff;
-    --bubble-in: #eef1f6;
+    --bg: #f6f8fc;
+    --surface: #ffffff;
+    --text: #172033;
+    --muted: #4a5568;
+    --accent: #1e3a8a;
+    --accent-hover: #172e6e;
+    --line: #dde3ee;
+    --bot: #eef1f7;
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0;
     background: var(--bg);
-    color: var(--ink);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     font-size: 18px;
     line-height: 1.5;
+    overflow-wrap: break-word;
   }
-  main {
-    max-width: 640px;
-    margin: 0 auto;
-    padding: 40px 20px 56px;
-  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 20px; }
+
+  .hero { padding: 40px 0 48px; }
   .tag {
-    display: inline-block;
     margin: 0 0 16px;
-    padding: 4px 12px;
-    border-radius: 999px;
-    background: var(--blue-soft);
-    color: var(--blue);
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 600;
+    color: var(--accent);
+    letter-spacing: .02em;
   }
   h1 {
     margin: 0 0 16px;
-    font-size: clamp(30px, 8vw, 44px);
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-    color: var(--blue);
+    font-size: 32px;
+    line-height: 1.2;
+    letter-spacing: -.01em;
   }
   .lead { margin: 0 0 28px; color: var(--muted); }
+
   .btn {
     display: inline-block;
-    padding: 16px 28px;
-    border-radius: 12px;
-    background: var(--blue);
+    min-height: 56px;
+    padding: 14px 28px;
+    background: var(--accent);
     color: #fff;
     font-size: 18px;
     font-weight: 600;
-    text-decoration: none;
+    line-height: 28px;
     text-align: center;
+    text-decoration: none;
+    border-radius: 12px;
+    border: 2px solid var(--accent);
+    transition: background .15s, transform .15s;
   }
-  .btn:hover { background: var(--blue-dark); }
-  .btn:focus-visible { outline: 3px solid #7f9cf0; outline-offset: 3px; }
+  .btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .btn:active { transform: translateY(1px); }
+  .btn:focus-visible { outline: 3px solid #f5b301; outline-offset: 3px; }
+
+  .demo { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 40px 0; }
+  h2 { margin: 0 0 8px; font-size: 24px; line-height: 1.3; }
+  .demo .sub { margin: 0 0 24px; color: var(--muted); }
+
   .chat {
-    margin: 48px 0 40px;
-    padding: 20px 16px;
-    border-radius: 20px;
-    background: var(--blue-soft);
+    background: #e8edf6;
+    border-radius: 16px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
     gap: 10px;
-  }
-  .chat h2 {
-    margin: 0 0 6px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--blue);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
   }
   .msg {
     max-width: 85%;
     padding: 10px 14px;
     border-radius: 16px;
-    font-size: 16px;
-    line-height: 1.4;
+    font-size: 17px;
+    line-height: 1.45;
   }
-  .me { align-self: flex-end; background: var(--blue); color: #fff; border-bottom-right-radius: 4px; }
-  .bot { align-self: flex-start; background: #fff; color: var(--ink); border-bottom-left-radius: 4px; }
-  .bot strong { display: block; }
+  .me { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+  .bot { align-self: flex-start; background: #fff; color: var(--text); border-bottom-left-radius: 4px; }
+  .bot b { font-weight: 600; }
   .gap { height: 10px; }
-  .cta p { margin: 0 0 16px; color: var(--muted); }
+  .report { margin: 8px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+  .report li { display: flex; justify-content: space-between; gap: 16px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .report span:last-child { white-space: nowrap; font-weight: 600; }
+  .file {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: var(--bot);
+    border-radius: 8px;
+    font-size: 16px;
+  }
+  .note { margin: 12px 0 0; font-size: 16px; color: var(--muted); }
+
+  .cta { padding: 48px 0 56px; text-align: center; }
+  .cta p { margin: 0 0 20px; font-size: 20px; }
+  .cta .btn { width: 100%; max-width: 360px; }
+  .foot { margin-top: 28px; font-size: 16px; color: var(--muted); }
+
+  @media (min-width: 600px) {
+    body { font-size: 20px; }
+    .hero { padding: 72px 0 80px; }
+    h1 { font-size: 46px; }
+    h2 { font-size: 30px; }
+    .msg { font-size: 18px; }
+    .chat { padding: 24px; }
+  }
   @media (max-width: 480px) {
-    .btn { display: block; }
-    main { padding-top: 28px; }
+    .hero .btn { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btn { transition: none; }
   }
 </style>
 </head>
 <body>
-<main>
-  <p class="tag">Маленький софт под ключ</p>
-  <h1>Управляйте 1С обычными сообщениями в Telegram</h1>
-  <p class="lead">Сделаю бота для вашего бизнеса на 1С. Пишете, что нужно, и он создаёт документ или формирует отчёт. Заходить в базу не придётся.</p>
-  <a class="btn" data-tg href="https://t.me/your_username">Написать в Telegram</a>
 
-  <section class="chat" aria-label="Пример переписки с ботом">
-    <h2>Так это выглядит</h2>
-    <div class="msg me">Создай счёт для ООО «Ромашка», 3 позиции</div>
-    <div class="msg bot"><strong>Готово</strong>Счёт № 128 на 84 500 ₽ создан в 1С.</div>
-    <div class="gap"></div>
-    <div class="msg me">Сформируй отчёт по продажам за прошлый месяц</div>
-    <div class="msg bot"><strong>Отчёт за сентябрь</strong>Продажи: 1 240 000 ₽. Файл отправил ниже.</div>
+<header class="hero">
+  <div class="wrap">
+    <p class="tag">Маленький софт под ключ</p>
+    <h1>Управляйте 1С обычными сообщениями в Telegram</h1>
+    <p class="lead">Для малого бизнеса на 1С. Напишите боту, что нужно: он создаст документ или пришлёт отчёт. Открывать 1С и искать нужные кнопки не придётся.</p>
+    <a class="btn" data-tg href="#">Написать в Telegram</a>
+  </div>
+</header>
+
+<main>
+  <section class="demo" aria-labelledby="demo-title">
+    <div class="wrap">
+      <h2 id="demo-title">Как это выглядит</h2>
+      <p class="sub">Вы пишете как коллеге. Бот делает работу в вашей базе 1С.</p>
+
+      <div class="chat" role="img" aria-label="Пример переписки с ботом: создание счёта и отчёт по продажам">
+        <div class="msg me">Создай счёт на ООО «Ромашка», 3 позиции</div>
+        <div class="msg bot">
+          Готово. Счёт <b>№ 148</b> от 20.10.2026 создан.<br>
+          Покупатель: ООО «Ромашка», 3 позиции.<br>
+          Сумма: <b>86 400 ₽</b>
+        </div>
+
+        <div class="gap"></div>
+
+        <div class="msg me">Сформируй отчёт по продажам за прошлый месяц</div>
+        <div class="msg bot">
+          Отчёт за сентябрь 2026:
+          <ul class="report">
+            <li><span>Выручка</span><span>1 254 300 ₽</span></li>
+            <li><span>Продаж</span><span>67</span></li>
+            <li><span>Средний чек</span><span>18 720 ₽</span></li>
+          </ul>
+          <span class="file">Продажи_сентябрь.xlsx</span>
+        </div>
+      </div>
+      <p class="note">Пример вымышленный: имена, номера и суммы придуманы для показа.</p>
+    </div>
   </section>
 
   <section class="cta">
-    <p>Опишите свою задачу своими словами, я скажу, как её решить.</p>
-    <a class="btn" data-tg href="https://t.me/your_username">Написать в Telegram</a>
+    <div class="wrap">
+      <p>Можно просто описать вашу задачу своими словами.</p>
+      <a class="btn" data-tg href="#">Написать в Telegram</a>
+    </div>
   </section>
 </main>
+
 <script>
-  // Замените ник на свой: ссылка подставится в обе кнопки.
+  // Замените на реальную ссылку до публикации. Подставляется во все кнопки.
   var TELEGRAM_URL = "https://t.me/your_username";
-  document.querySelectorAll("[data-tg]").forEach(function (a) { a.href = TELEGRAM_URL; });
+  var links = document.querySelectorAll("[data-tg]");
+  for (var i = 0; i < links.length; i++) {
+    links[i].href = TELEGRAM_URL;
+  }
 </script>
 </body>
 </html>
