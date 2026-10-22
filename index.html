@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Управляйте 1С сообщениями в Telegram</title>
-<meta name="description" content="Telegram-бот для малого бизнеса на 1С: создавайте документы и получайте отчёты обычным сообщением.">
+<title>Мини-инструмент за минуту</title>
+<meta name="description" content="Соберите свой маленький рабочий инструмент за минуту: выберите шаблон, назовите поля и поделитесь ссылкой.">
 <style>
   :root {
     --bg: #f6f8fc;
@@ -14,7 +14,7 @@
     --accent: #1e3a8a;
     --accent-hover: #172e6e;
     --line: #dde3ee;
-    --bot: #eef1f7;
+    --soft: #eef1f7;
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
@@ -64,54 +64,98 @@
   .btn:active { transform: translateY(1px); }
   .btn:focus-visible { outline: 3px solid #f5b301; outline-offset: 3px; }
 
-  .demo { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 40px 0; }
+  section { padding: 40px 0; }
+  .alt { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
   h2 { margin: 0 0 8px; font-size: 24px; line-height: 1.3; }
-  .demo .sub { margin: 0 0 24px; color: var(--muted); }
+  .sub { margin: 0 0 24px; color: var(--muted); }
 
-  .chat {
-    background: #e8edf6;
+  .steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; counter-reset: s; }
+  .steps li {
+    counter-increment: s;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 16px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  .steps li::before {
+    content: counter(s);
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    line-height: 36px;
+    text-align: center;
+  }
+  .steps b { display: block; }
+  .steps span { color: var(--muted); font-size: 17px; }
+
+  .tool {
+    background: #fff;
+    border: 1px solid var(--line);
     border-radius: 16px;
     padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    box-shadow: 0 6px 24px rgba(23, 32, 51, .08);
   }
-  .msg {
-    max-width: 85%;
+  .tool-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+  .tool-head b { font-size: 20px; }
+  .tool-head span { font-size: 16px; color: var(--muted); }
+  .tool-form { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 12px; }
+  .field {
     padding: 10px 14px;
-    border-radius: 16px;
-    font-size: 17px;
-    line-height: 1.45;
-  }
-  .me { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
-  .bot { align-self: flex-start; background: #fff; color: var(--text); border-bottom-left-radius: 4px; }
-  .bot b { font-weight: 600; }
-  .gap { height: 10px; }
-  .report { margin: 8px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
-  .report li { display: flex; justify-content: space-between; gap: 16px; padding: 6px 0; border-bottom: 1px solid var(--line); }
-  .report span:last-child { white-space: nowrap; font-weight: 600; }
-  .file {
-    display: inline-block;
-    margin-top: 8px;
-    padding: 6px 12px;
-    background: var(--bot);
-    border-radius: 8px;
+    background: var(--soft);
+    border-radius: 10px;
     font-size: 16px;
+    color: var(--muted);
+  }
+  .tool-add {
+    display: inline-block;
+    padding: 10px 18px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .rows { margin: 16px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+  .rows li { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 17px; }
+  .rows li span:last-child { white-space: nowrap; font-weight: 600; }
+  .total { display: flex; justify-content: space-between; margin-top: 12px; font-weight: 600; }
+  .link-chip {
+    display: block;
+    margin-top: 16px;
+    padding: 10px 14px;
+    background: var(--soft);
+    border-radius: 10px;
+    font-size: 16px;
+    color: var(--muted);
+    overflow-wrap: anywhere;
   }
   .note { margin: 12px 0 0; font-size: 16px; color: var(--muted); }
+
+  .cards { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+  .cards li { padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+  .cards b { display: block; }
+  .cards span { color: var(--muted); font-size: 17px; }
 
   .cta { padding: 48px 0 56px; text-align: center; }
   .cta p { margin: 0 0 20px; font-size: 20px; }
   .cta .btn { width: 100%; max-width: 360px; }
-  .foot { margin-top: 28px; font-size: 16px; color: var(--muted); }
 
   @media (min-width: 600px) {
     body { font-size: 20px; }
     .hero { padding: 72px 0 80px; }
+    section { padding: 56px 0; }
     h1 { font-size: 46px; }
     h2 { font-size: 30px; }
-    .msg { font-size: 18px; }
-    .chat { padding: 24px; }
+    .tool { padding: 24px; }
+    .tool-form { grid-template-columns: 1fr 1fr; }
+    .cards { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width: 480px) {
     .hero .btn { width: 100%; }
@@ -125,59 +169,70 @@
 
 <header class="hero">
   <div class="wrap">
-    <p class="tag">Маленький софт под ключ</p>
-    <h1>Управляйте 1С обычными сообщениями в Telegram</h1>
-    <p class="lead">Для малого бизнеса на 1С. Напишите боту, что нужно: он создаст документ или пришлёт отчёт. Открывать 1С и искать нужные кнопки не придётся.</p>
-    <a class="btn" data-tg href="#">Написать в Telegram</a>
+    <p class="tag">Мини-инструмент за минуту</p>
+    <h1>Соберите свой маленький рабочий инструмент за минуту</h1>
+    <p class="lead">Таблица уже тесна, а заказывать программу долго и дорого. Выберите шаблон, назовите поля, и инструмент готов. Им можно пользоваться самому или отправить ссылку коллегам.</p>
+    <a class="btn" href="try.html">Попробовать</a>
   </div>
 </header>
 
 <main>
-  <section class="demo" aria-labelledby="demo-title">
+  <section class="alt" aria-labelledby="how-title">
     <div class="wrap">
-      <h2 id="demo-title">Как это выглядит</h2>
-      <p class="sub">Вы пишете как коллеге. Бот делает работу в вашей базе 1С.</p>
+      <h2 id="how-title">Как это работает</h2>
+      <p class="sub">Три шага, программировать не нужно.</p>
+      <ol class="steps">
+        <li><div><b>Выберите шаблон</b><span>Учёт расходов, трекер привычек, доска задач или счётчик показателей.</span></div></li>
+        <li><div><b>Назовите поля</b><span>Что вы хотите записывать: сумму, дату, имя, статус. Назвать можно как угодно.</span></div></li>
+        <li><div><b>Пользуйтесь и делитесь</b><span>Инструмент работает сразу. Ссылку можно отправить тем, с кем вы им пользуетесь вместе.</span></div></li>
+      </ol>
+    </div>
+  </section>
 
-      <div class="chat" role="img" aria-label="Пример переписки с ботом: создание счёта и отчёт по продажам">
-        <div class="msg me">Создай счёт на ООО «Ромашка», 3 позиции</div>
-        <div class="msg bot">
-          Готово. Счёт <b>№ 148</b> от 20.10.2026 создан.<br>
-          Покупатель: ООО «Ромашка», 3 позиции.<br>
-          Сумма: <b>86 400 ₽</b>
+  <section aria-labelledby="demo-title">
+    <div class="wrap">
+      <h2 id="demo-title">Как выглядит результат</h2>
+      <p class="sub">Например, общий учёт расходов на поездку.</p>
+
+      <div class="tool" role="img" aria-label="Пример готового инструмента: учёт расходов на поездку с формой и списком записей">
+        <div class="tool-head"><b>Расходы на поездку</b><span>3 записи</span></div>
+        <div class="tool-form">
+          <div class="field">Что купили</div>
+          <div class="field">Сумма, ₽</div>
         </div>
-
-        <div class="gap"></div>
-
-        <div class="msg me">Сформируй отчёт по продажам за прошлый месяц</div>
-        <div class="msg bot">
-          Отчёт за сентябрь 2026:
-          <ul class="report">
-            <li><span>Выручка</span><span>1 254 300 ₽</span></li>
-            <li><span>Продаж</span><span>67</span></li>
-            <li><span>Средний чек</span><span>18 720 ₽</span></li>
-          </ul>
-          <span class="file">Продажи_сентябрь.xlsx</span>
-        </div>
+        <span class="tool-add">Добавить</span>
+        <ul class="rows">
+          <li><span>Билеты на поезд</span><span>6 400 ₽</span></li>
+          <li><span>Хостел, 2 ночи</span><span>4 200 ₽</span></li>
+          <li><span>Экскурсия</span><span>1 800 ₽</span></li>
+        </ul>
+        <div class="total"><span>Итого</span><span>12 400 ₽</span></div>
+        <span class="link-chip">Ссылка для друзей: mini.example/poezdka</span>
       </div>
-      <p class="note">Пример вымышленный: имена, номера и суммы придуманы для показа.</p>
+      <p class="note">Пример вымышленный: записи и ссылка придуманы для показа.</p>
+    </div>
+  </section>
+
+  <section class="alt" aria-labelledby="what-title">
+    <div class="wrap">
+      <h2 id="what-title">Что можно собрать</h2>
+      <p class="sub">Маленькие инструменты для одного человека или небольшой команды.</p>
+      <ul class="cards">
+        <li><b>Учёт расходов</b><span>Куда уходят деньги в поездке, в семье или в проекте.</span></li>
+        <li><b>Трекер привычек</b><span>Отмечать сделанное по дням и видеть серию.</span></li>
+        <li><b>Доска задач</b><span>Колонки «Нужно», «В работе», «Готово» для небольшой команды.</span></li>
+        <li><b>Счётчик показателей</b><span>Записывать важные цифры и видеть, как они меняются.</span></li>
+      </ul>
     </div>
   </section>
 
   <section class="cta">
     <div class="wrap">
-      <p>Можно просто описать вашу задачу своими словами.</p>
-      <a class="btn" data-tg href="#">Написать в Telegram</a>
+      <p>Соберите первый инструмент прямо сейчас.</p>
+      <a class="btn" href="try.html">Попробовать</a>
     </div>
   </section>
 </main>
 
-<script>
-  // Замените на реальную ссылку до публикации. Подставляется во все кнопки.
-  var TELEGRAM_URL = "https://t.me/your_username";
-  var links = document.querySelectorAll("[data-tg]");
-  for (var i = 0; i < links.length; i++) {
-    links[i].href = TELEGRAM_URL;
-  }
-</script>
 </body>
 </html>
