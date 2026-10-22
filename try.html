@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Расходы на поездку — Мини-инструмент за минуту</title>
+<meta name="description" content="Попробуйте мини-инструмент: учёт расходов на поездку с итогами. Без регистрации, данные остаются в вашем браузере.">
+<style>
+  :root {
+    --bg: #f6f8fc;
+    --surface: #ffffff;
+    --text: #172033;
+    --muted: #4a5568;
+    --accent: #1e3a8a;
+    --accent-hover: #172e6e;
+    --line: #dde3ee;
+    --soft: #eef1f7;
+    --error: #b42318;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 18px;
+    line-height: 1.5;
+    overflow-wrap: break-word;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 20px; }
+  header { padding: 24px 0 8px; }
+  .back { display: inline-block; padding: 8px 0; color: var(--accent); font-size: 17px; font-weight: 600; }
+  .back:focus-visible, .btn:focus-visible, input:focus-visible, .del:focus-visible { outline: 3px solid #f5b301; outline-offset: 2px; }
+  h1 { margin: 8px 0 8px; font-size: 30px; line-height: 1.2; letter-spacing: -.01em; }
+  .lead { margin: 0 0 20px; color: var(--muted); font-size: 17px; }
+  main { padding-bottom: 48px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 6px 24px rgba(23, 32, 51, .08);
+  }
+  h2 { margin: 0 0 4px; font-size: 20px; line-height: 1.3; }
+  .hint { margin: 0 0 12px; color: var(--muted); font-size: 16px; }
+
+  .form { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  .fld label, .fld .lbl-static { display: block; }
+  /* Название поля — это input: его можно переименовать прямо на месте */
+  .name {
+    width: 100%;
+    margin-bottom: 4px;
+    padding: 4px 6px;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--accent);
+    background: transparent;
+    border: 0;
+    border-bottom: 1px dashed var(--accent);
+    border-radius: 0;
+  }
+  .val {
+    width: 100%;
+    min-height: 48px;
+    padding: 10px 14px;
+    font: inherit;
+    font-size: 18px;
+    color: var(--text);
+    background: var(--soft);
+    border: 2px solid transparent;
+    border-radius: 10px;
+  }
+  .val.bad { border-color: var(--error); }
+  .msg { min-height: 1.5em; margin: 8px 0 0; color: var(--error); font-size: 16px; }
+
+  .btn {
+    display: inline-block;
+    min-height: 52px;
+    padding: 12px 28px;
+    background: var(--accent);
+    color: #fff;
+    font: inherit;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 12px;
+    border: 2px solid var(--accent);
+    cursor: pointer;
+  }
+  .btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .btn:active { transform: translateY(1px); }
+  .form .btn { width: 100%; }
+
+  .totals { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 12px; }
+  .tot { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 14px; background: var(--soft); border-radius: 10px; }
+  .tot span:first-child { color: var(--muted); font-size: 16px; }
+  .tot b { font-size: 24px; white-space: nowrap; }
+  .people { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .people label { font-size: 16px; font-weight: 600; }
+  .people .val { width: 120px; }
+  .people small { color: var(--muted); font-size: 15px; }
+
+  .rows { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+  .rows li { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .rows .main { flex: 1; min-width: 0; }
+  .rows .main b { display: block; }
+  .rows .main span { color: var(--muted); font-size: 16px; }
+  .rows .sum { font-weight: 600; white-space: nowrap; }
+  .del {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    font: inherit;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--muted);
+    background: var(--soft);
+    border: 0;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .del:hover { color: var(--error); }
+  .empty { margin: 0; padding: 12px 0; color: var(--muted); font-size: 16px; }
+  .note { margin: 0 0 8px; color: var(--muted); font-size: 16px; }
+
+  @media (min-width: 600px) {
+    body { font-size: 20px; }
+    h1 { font-size: 40px; }
+    .card { padding: 24px; }
+    .form { grid-template-columns: 1fr 160px 1fr; }
+    .form .btn, .form .msg { grid-column: 1 / -1; }
+    .form .btn { width: auto; justify-self: start; }
+    .totals { grid-template-columns: 1fr 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="back" href="index.html">← На главную</a>
+    <h1>Расходы на поездку</h1>
+    <p class="lead">Записывайте покупки — итоги посчитаются сами. Регистрация не нужна.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card" aria-labelledby="add-title">
+    <h2 id="add-title">Новый расход</h2>
+    <p class="hint">Название любого поля можно изменить: нажмите на него и впишите своё.</p>
+    <form class="form" id="form" novalidate>
+      <div class="fld">
+        <input class="name" id="n0" aria-label="Название поля 1" maxlength="40" autocomplete="off">
+        <input class="val" id="v0" aria-labelledby="n0" maxlength="100" autocomplete="off">
+      </div>
+      <div class="fld">
+        <input class="name" id="n1" aria-label="Название поля 2" maxlength="40" autocomplete="off">
+        <input class="val" id="v1" aria-labelledby="n1" inputmode="decimal" maxlength="20" autocomplete="off" placeholder="0">
+      </div>
+      <div class="fld">
+        <input class="name" id="n2" aria-label="Название поля 3" maxlength="40" autocomplete="off">
+        <input class="val" id="v2" aria-labelledby="n2" maxlength="60" autocomplete="off">
+      </div>
+      <p class="msg" id="msg" role="alert"></p>
+      <button class="btn" type="submit">Добавить</button>
+    </form>
+  </section>
+
+  <section class="card" aria-labelledby="sum-title">
+    <h2 id="sum-title">Итоги</h2>
+    <div class="totals" aria-live="polite">
+      <div class="tot"><span>Всего потрачено</span><b id="total">0 ₽</b></div>
+      <div class="tot"><span>На человека</span><b id="per">0 ₽</b></div>
+    </div>
+    <div class="people">
+      <label for="people">Сколько вас едет</label>
+      <input class="val" id="people" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="авто">
+      <small id="peopleHint"></small>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="list-title">
+    <h2 id="list-title">Записи <span id="count"></span></h2>
+    <ul class="rows" id="rows"></ul>
+    <p class="empty" id="empty">Пока пусто. Добавьте первый расход выше.</p>
+  </section>
+
+  <p class="note">Записи хранятся только в этом браузере на этом устройстве: на другом телефоне или у других людей их не будет, а при очистке браузера они пропадут.</p>
+</main>
+
+<script>
+(function () {
+  var KEY = 'trip-expenses-v1';
+  var DEFAULT_NAMES = ['Что куплено', 'Сумма', 'Кто платил'];
+  var state = { names: DEFAULT_NAMES.slice(), rows: [], people: '' };
+
+  function $(id) { return document.getElementById(id); }
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      var s = JSON.parse(raw);
+      if (s && Array.isArray(s.names) && s.names.length === 3) {
+        state.names = s.names.map(function (n, i) { return String(n).trim() || DEFAULT_NAMES[i]; });
+      }
+      if (s && Array.isArray(s.rows)) {
+        state.rows = s.rows.filter(function (r) { return r && typeof r === 'object'; }).map(function (r) {
+          var a = Number(r.amount);
+          return { what: String(r.what || ''), amount: isFinite(a) ? a : 0, who: String(r.who || '') };
+        });
+      }
+      if (s && typeof s.people === 'string') state.people = s.people;
+    } catch (e) { /* повреждённые данные: начинаем с шаблона, страница не ломается */ }
+  }
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* хранилище недоступно: работаем без сохранения */ }
+  }
+
+  // "1 200,50" / "1200.5" -> число; пустое или нечисловое -> null
+  function parseAmount(text) {
+    var t = String(text).replace(/[\s ]/g, '').replace(',', '.');
+    if (!/^\d+(\.\d+)?$/.test(t)) return null;
+    var n = Number(t);
+    return isFinite(n) ? n : null;
+  }
+
+  function money(n) {
+    return (Math.round(n * 100) / 100).toLocaleString('ru-RU', { maximumFractionDigits: 2 }) + ' ₽';
+  }
+
+  function distinctPayers() {
+    var seen = {};
+    state.rows.forEach(function (r) {
+      var k = r.who.trim().toLowerCase();
+      if (k) seen[k] = true;
+    });
+    return Object.keys(seen).length;
+  }
+
+  // Число людей: введённое пользователем, иначе число разных плательщиков (минимум 1)
+  function peopleCount() {
+    var typed = parseInt(state.people, 10);
+    if (typed >= 1) return { n: typed, auto: false };
+    return { n: Math.max(1, distinctPayers()), auto: true };
+  }
+
+  function renderTotals() {
+    var total = state.rows.reduce(function (s, r) { return s + r.amount; }, 0);
+    var p = peopleCount();
+    $('total').textContent = money(total);
+    $('per').textContent = money(total / p.n);
+    $('peopleHint').textContent = p.auto ? 'считаем по разным значениям в поле «' + state.names[2] + '»: ' + p.n : '';
+  }
+
+  function renderRows() {
+    var ul = $('rows');
+    ul.textContent = '';
+    state.rows.forEach(function (r, i) {
+      var li = document.createElement('li');
+      var main = document.createElement('div');
+      main.className = 'main';
+      var b = document.createElement('b');
+      b.textContent = r.what || '—';
+      var who = document.createElement('span');
+      who.textContent = state.names[2] + ': ' + (r.who || '—');
+      main.appendChild(b);
+      main.appendChild(who);
+      var sum = document.createElement('div');
+      sum.className = 'sum';
+      sum.textContent = money(r.amount);
+      var del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'del';
+      del.textContent = '×';
+      del.setAttribute('aria-label', 'Удалить запись: ' + (r.what || 'без названия'));
+      del.addEventListener('click', function () {
+        state.rows.splice(i, 1);
+        save();
+        renderAll();
+      });
+      li.appendChild(main);
+      li.appendChild(sum);
+      li.appendChild(del);
+      ul.appendChild(li);
+    });
+    $('empty').style.display = state.rows.length ? 'none' : '';
+    $('count').textContent = state.rows.length ? '(' + state.rows.length + ')' : '';
+  }
+
+  function renderAll() {
+    renderRows();
+    renderTotals();
+  }
+
+  function setMsg(text, bad) {
+    $('msg').textContent = text;
+    $('v1').classList.toggle('bad', !!bad);
+  }
+
+  // Названия полей
+  [0, 1, 2].forEach(function (i) {
+    var inp = $('n' + i);
+    inp.value = state.names[i];
+    inp.addEventListener('input', function () {
+      state.names[i] = inp.value.trim() || DEFAULT_NAMES[i];
+      save();
+      renderAll();
+    });
+    inp.addEventListener('blur', function () { inp.value = state.names[i]; });
+  });
+
+  $('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var amount = parseAmount($('v1').value);
+    if (amount === null) {
+      setMsg('Впишите сумму числом, например 1500 или 99,50. Остальное сохранено в форме.', true);
+      $('v1').focus();
+      return;
+    }
+    state.rows.push({ what: $('v0').value.trim(), amount: amount, who: $('v2').value.trim() });
+    save();
+    setMsg('', false);
+    $('v0').value = '';
+    $('v1').value = '';
+    // «кто платил» оставляем: часто платит один и тот же человек
+    renderAll();
+    $('v0').focus();
+  });
+
+  $('v1').addEventListener('input', function () { setMsg('', false); });
+
+  $('people').addEventListener('input', function () {
+    state.people = $('people').value.replace(/\D/g, '');
+    save();
+    renderTotals();
+  });
+
+  load();
+  [0, 1, 2].forEach(function (i) { $('n' + i).value = state.names[i]; });
+  $('people').value = state.people;
+  renderAll();
+})();
+</script>
+</body>
+</html>
