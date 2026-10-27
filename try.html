@@ -97,7 +97,7 @@
   .totals { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 12px; }
   .tot { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 14px; background: var(--soft); border-radius: 10px; }
   .tot span:first-child { color: var(--muted); font-size: 16px; }
-  .tot b { font-size: 24px; white-space: nowrap; }
+  .tot b { font-size: 24px; text-align: right; overflow-wrap: anywhere; }
   .people { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .people label { font-size: 16px; font-weight: 600; }
   .people .val { width: 120px; }
@@ -108,7 +108,7 @@
   .rows .main { flex: 1; min-width: 0; }
   .rows .main b { display: block; }
   .rows .main span { color: var(--muted); font-size: 16px; }
-  .rows .sum { font-weight: 600; white-space: nowrap; text-align: right; }
+  .rows .sum { flex: none; max-width: 45%; font-weight: 600; text-align: right; overflow-wrap: anywhere; }
   .rows .sum small { display: block; color: var(--muted); font-size: 14px; font-weight: 400; white-space: normal; max-width: 120px; margin-left: auto; }
   .del {
     flex: none;
