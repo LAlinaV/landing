@@ -108,7 +108,8 @@
   .rows .main { flex: 1; min-width: 0; }
   .rows .main b { display: block; }
   .rows .main span { color: var(--muted); font-size: 16px; }
-  .rows .sum { font-weight: 600; white-space: nowrap; }
+  .rows .sum { font-weight: 600; white-space: nowrap; text-align: right; }
+  .rows .sum small { display: block; color: var(--muted); font-size: 14px; font-weight: 400; white-space: normal; max-width: 120px; margin-left: auto; }
   .del {
     flex: none;
     width: 44px;
@@ -266,14 +267,17 @@
       var main = document.createElement('div');
       main.className = 'main';
       var b = document.createElement('b');
-      b.textContent = r.what || '—';
+      b.textContent = state.names[0] + ': ' + (r.what || '—');
       var who = document.createElement('span');
       who.textContent = state.names[2] + ': ' + (r.who || '—');
       main.appendChild(b);
       main.appendChild(who);
       var sum = document.createElement('div');
       sum.className = 'sum';
-      sum.textContent = money(r.amount);
+      var sumLbl = document.createElement('small');
+      sumLbl.textContent = state.names[1];
+      sum.appendChild(sumLbl);
+      sum.appendChild(document.createTextNode(money(r.amount)));
       var del = document.createElement('button');
       del.type = 'button';
       del.className = 'del';
